@@ -94,3 +94,45 @@ if __name__ == "__main__":
 __Output Summary__:
 
 <img src='images/summary_cbam.png'>
+
+---
+# Integrating CBAM with TensorFlow model:
+```
+# The input images of shape 28x28 with a single channel (grayscale images).
+input_layer = tf.keras.Input(shape=(28, 28, 1))
+
+# 2D convolutional layer
+x = tf.keras.layers.Conv2D(32, (3,3), activation="relu")(input_layer)
+# Max pooling with a 2x2 window is applied, reducing the spatial dimensions
+x = tf.keras.layers.MaxPooling2D((2,2))(x)
+# CBAM applied to the output of the previous layer.
+x = CBAM(x)
+
+# Another convolutional layer
+x = tf.keras.layers.Conv2D(64, (3,3), activation='relu')(x)
+# Max pooling
+x = tf.keras.layers.MaxPooling2D((2,2))(x)
+
+# The output from the previous layer is flattened into a 1D vector. This prepares the data for fully connected (dense) layers
+x = tf.keras.layers.Flatten()(x)
+# Two fully connected (dense) layers
+x = tf.keras.layers.Dense(4, activation='relu')(x)
+x = tf.keras.layers.Dense(4, activation='relu')(x)
+The final output layer
+output = tf.keras.layers.Dense(10, activation='softmax')(x)
+
+model2 = tf.keras.Model(inputs=input_layer, outputs=output)
+
+# Compile the model.
+model2.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+               optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+               metrics=["accuracy"])
+
+# Fit the model.
+history2 = model2.fit(train_data_norm,
+                      train_labels,
+                      epochs=20,
+                      validation_data=(test_data_norm, test_labels))
+```
+
+
